@@ -1,17 +1,18 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron';
-import path from 'path';
-import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import Database from './services/database.js';
-import GameManager from './services/gameManager.js';
-
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { app, BrowserWindow, ipcMain, globalShortcut, dialog } = require('electron');
+const path = require('path');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const https = require('https');
+const http = require('http');
+const url = require('url');
+const Database = require('./services/database.js');
+const GameManager = require('./services/gameManager.js');
 
 let mainWindow;
 let gameManager;
 let database;
+let imageCacheDir;
+let globalImageCache = new Map(); // Shared cache across all instances
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -60,6 +61,14 @@ app.whenReady().then(async () => {
   gameManager = new GameManager(database);
   await gameManager.init();
 
+  // Setup persistent image cache directory
+  imageCacheDir = path.join(app.getPath('userData'), 'images');
+  if (!fs.existsSync(imageCacheDir)) {
+    fs.mkdirSync(imageCacheDir, { recursive: true });
+  }
+  
+  console.log('Image cache directory:', imageCacheDir);
+
   createWindow();
 
   app.on('activate', () => {
@@ -78,6 +87,40 @@ app.on('will-quit', () => {
 // IPC Handlers
 ipcMain.handle('get-games', async () => {
   return await gameManager.getAllGames();
+});
+
+// Check if all game images are cached
+ipcMain.handle('check-all-images-cached', async (event, games) => {
+  try {
+    const crypto = require('crypto');
+    const missingImages = [];
+    
+    for (const game of games) {
+      if (game.boxArt && game.boxArt.trim() !== '') {
+        const urlHash = crypto.createHash('md5').update(game.boxArt).digest('hex');
+        const fileExtension = path.extname(url.parse(game.boxArt).pathname) || '.jpg';
+        const localPath = path.join(imageCacheDir, `${urlHash}${fileExtension}`);
+        
+        if (!fs.existsSync(localPath)) {
+          missingImages.push({
+            url: game.boxArt,
+            localPath: localPath,
+            gameTitle: game.title
+          });
+        }
+      }
+    }
+    
+    return {
+      success: true,
+      allCached: missingImages.length === 0,
+      missingCount: missingImages.length,
+      missingImages: missingImages
+    };
+  } catch (error) {
+    console.error('Error checking image cache:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 ipcMain.handle('add-game', async (event, gameData) => {
@@ -148,4 +191,92 @@ ipcMain.handle('system-shutdown', () => {
 
 ipcMain.handle('system-reboot', () => {
   spawn('sudo', ['reboot'], { detached: true, stdio: 'ignore' });
-}); 
+});
+
+// Check if image is already cached
+ipcMain.handle('check-image-cache', async (event, imageUrl) => {
+  try {
+    const crypto = require('crypto');
+    const urlHash = crypto.createHash('md5').update(imageUrl).digest('hex');
+    const fileExtension = path.extname(url.parse(imageUrl).pathname) || '.jpg';
+    const localPath = path.join(imageCacheDir, `${urlHash}${fileExtension}`);
+    
+    if (fs.existsSync(localPath)) {
+      const stats = fs.statSync(localPath);
+      return { 
+        success: true, 
+        localPath: localPath, 
+        exists: true, 
+        size: stats.size 
+      };
+    } else {
+      return { 
+        success: true, 
+        localPath: localPath, 
+        exists: false, 
+        size: 0 
+      };
+    }
+  } catch (error) {
+    console.error('Error checking image cache:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Image download handler for high-quality textures
+ipcMain.handle('download-image', async (event, imageUrl) => {
+  try {
+    // Create a hash of the URL to use as filename
+    const crypto = require('crypto');
+    const urlHash = crypto.createHash('md5').update(imageUrl).digest('hex');
+    const fileExtension = path.extname(url.parse(imageUrl).pathname) || '.jpg';
+    const localPath = path.join(imageCacheDir, `${urlHash}${fileExtension}`);
+    
+    // Check if already cached
+    if (fs.existsSync(localPath)) {
+      console.log('Image already cached:', localPath);
+      return { success: true, localPath: localPath };
+    }
+    
+    console.log('Downloading image:', imageUrl);
+    
+    return new Promise((resolve, reject) => {
+      const parsedUrl = url.parse(imageUrl);
+      const isHttps = parsedUrl.protocol === 'https:';
+      const client = isHttps ? https : http;
+      
+      const request = client.get(imageUrl, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+          return;
+        }
+        
+        const fileStream = fs.createWriteStream(localPath);
+        response.pipe(fileStream);
+        
+        fileStream.on('finish', () => {
+          fileStream.close();
+          console.log('Image downloaded successfully:', localPath);
+          resolve({ success: true, localPath: localPath });
+        });
+        
+        fileStream.on('error', (err) => {
+          fs.unlink(localPath, () => {}); // Delete the file if it exists
+          reject(err);
+        });
+      });
+      
+      request.on('error', (err) => {
+        reject(err);
+      });
+      
+      request.setTimeout(30000, () => {
+        request.destroy();
+        reject(new Error('Download timeout'));
+      });
+    });
+  } catch (error) {
+    console.error('Error downloading image:', error);
+    return { success: false, error: error.message };
+  }
+});

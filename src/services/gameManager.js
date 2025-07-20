@@ -1,6 +1,6 @@
-import fs from 'fs/promises';
-import path from 'path';
-import chokidar from 'chokidar';
+const fs = require('fs/promises');
+const path = require('path');
+const chokidar = require('chokidar');
 
 class GameManager {
     constructor(database) {
@@ -274,4 +274,4 @@ class GameManager {
     }
 }
 
-export default GameManager; 
+module.exports = GameManager; 

@@ -8,7 +8,9 @@
   },
   "dependencies": {
     "electron": "^25.0.0",
-    "babylonjs": "^5.0.0"
+    "babylonjs": "^5.0.0",
+    "lowdb": "^6.0.0",
+    "chokidar": "^3.5.0"
   },
   "devDependencies": {},
   "author": "",

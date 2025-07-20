@@ -57,7 +57,7 @@ export class GameCarouselView {
     cleanup() {
         console.log('GameCarouselView: Cleaning up...');
         
-        // Clean up Babylon.js carousel
+        // Clean up Three.js carousel
         if (this.carousel && this.carousel.dispose) {
             this.carousel.dispose();
         }

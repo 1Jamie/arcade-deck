@@ -1,7 +1,6 @@
-import { JSONFilePreset } from 'lowdb/node';
-import path from 'path';
-import fs from 'fs/promises';
-import os from 'os';
+const path = require('path');
+const fs = require('fs/promises');
+const os = require('os');
 
 class Database {
     constructor() {
@@ -33,7 +32,9 @@ class Database {
                 retroarchCores: []
             };
 
-            this.db = await JSONFilePreset(this.dbPath, defaultData);
+            // Use dynamic import for lowdb
+            const { JSONPreset } = await import('lowdb/node');
+            this.db = await JSONPreset(this.dbPath, defaultData);
             console.log(`Database initialized at: ${this.dbPath}`);
         } catch (error) {
             console.error('Failed to initialize database:', error);
@@ -158,4 +159,4 @@ class Database {
     }
 }
 
-export default Database; 
+module.exports = Database; 

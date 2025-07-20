@@ -85,9 +85,9 @@ class ArcadeDeckApp {
             const emptyState = document.getElementById('empty-state');
             if (emptyState) emptyState.style.display = 'none';
             
-            // Make sure Babylon.js is loaded before creating carousel
-            if (typeof BABYLON === 'undefined') {
-                console.error('App: Babylon.js not loaded yet, retrying...');
+            // Make sure Three.js is loaded before creating carousel
+            if (typeof THREE === 'undefined') {
+                console.error('App: Three.js not loaded yet, retrying...');
                 setTimeout(() => this.updateGameView(), 100);
                 return;
             }
