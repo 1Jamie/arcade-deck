@@ -1,0 +1,181 @@
+Project Plan & Specification: "Arcade Deck" (v2)
+1. Vision Statement
+To create a modern, visually engaging, and highly functional game launcher for a Raspberry Pi 4. The application will provide a console-like "10-foot experience," allowing users to browse and launch their entire game library (PC games, emulated titles) using a gamepad. The user interface will be a fluid 3D carousel of game cards, prioritizing aesthetics, deep customization, and ease of use, while running smoothly on Raspbian OS.
+
+2. Core Features
+2.1. Dynamic 3D User Interface
+Visuals: The main view will be a horizontal, infinitely scrolling 3D carousel of "game cards." The entire UI will be themeable.
+
+Interaction:
+
+The centered game card will be in focus, enlarged, and fully lit.
+
+Adjacent cards will be visible but angled away in 3D space, creating a sense of depth.
+
+Navigating left or right will smoothly animate the carousel with physics-based motion.
+
+A "quick scroll" function (e.g., holding a shoulder button) will accelerate carousel movement.
+
+Selection View:
+
+Pressing "Select" on a focused card animates it forward to a detailed view. The background carousel blurs and dims, and a game-specific video or theme art can play in the background.
+
+Details Displayed: Box art, game title, description, genre, release date, player count, and user rating (scraped from online databases).
+
+Actions: "Launch Game", "Game Settings" (for core overrides, etc.), and "Mark as Favorite".
+
+2.2. Intelligent Game Management
+Manual Entry: A settings menu will allow users to manually add an entry.
+
+Fields: Custom Title, Executable Path/Command, Description, Genre, Release Date, Player Count, and paths for custom card image, and background theme/video.
+
+Automated Library Scanner:
+
+The app will use a robust file watcher (chokidar) to monitor multiple user-defined roms directories in real-time.
+
+Metadata Scraping: On finding a new ROM, it will automatically query online databases (like IGDB and ScreenScraper.fr via their APIs) to fetch metadata and media (box art, logos, background art, descriptions).
+
+Duplicate Handling: It will identify different regional versions (USA, Europe, Japan) of the same game and group them under a single game card, with a simple sub-menu to select the version to launch.
+
+Library Sync: The scanner will detect when ROMs are deleted and automatically remove the corresponding entries from the UI.
+
+2.3. Seamless RetroArch Integration
+Dynamic Core Detection: Automatically detects all installed RetroArch cores by scanning the cores directory. A "rescan" button in settings will refresh the list.
+
+Smart Core Association:
+
+Maintains a default core mapping for file extensions (e.g., .sfc -> snes9x_libretro.so).
+
+Per-Game Override: In the "Game Settings" view, the user can override the default and assign a specific core for an individual game.
+
+If no default is set, a one-time UI prompt will ask the user to select a core, saving the choice for future launches.
+
+Configuration Passthrough: The settings menu will provide shortcuts to launch directly into specific RetroArch menus (e.g., Main Menu, Input Settings, Core Settings) for advanced configuration.
+
+2.4. System Control & Focus Management
+Exclusive Focus: When a game is launched, the Arcade Deck GUI minimizes and cedes all system resources.
+
+Automatic Return: Upon game exit (process termination), focus is immediately and automatically returned to the Arcade Deck GUI, which will be in the exact state it was left in.
+
+Power Controls: The main settings menu will include options to gracefully Reboot or Shutdown the Raspberry Pi, with a confirmation prompt.
+
+2.5. Full Gamepad Navigation
+Primary Input: The entire UI is 100% navigable with a standard gamepad.
+
+Default Mapping: D-Pad/Left Stick (Navigate), A/Cross (Select/Confirm), B/Circle (Back/Cancel), Y/Triangle (Game Settings), X/Square (Mark Favorite), Start (Main Menu/Settings), Shoulder Buttons (Quick Scroll).
+
+On-Screen Keyboard: A simple, efficient virtual keyboard for all text input.
+
+3. Customization & Theming
+Theme Engine: Users can download and install themes. A theme is a self-contained folder that can modify:
+
+Appearance: CSS files for colors, fonts, and element styles.
+
+Layout: Options to change the carousel style (e.g., vertical wheel, flat grid).
+
+Images: UI textures, icons, and backgrounds.
+
+Sound Packs: UI navigation sounds are customizable. Users can enable/disable sounds or select different sound packs.
+
+Performance Profiles: A global setting to switch between:
+
+Fancy: All animations, particle effects, and HD videos enabled.
+
+Balanced: Disables heavy effects but maintains smooth core animations.
+
+Fast: Disables all non-essential animations for maximum performance on older hardware.
+
+4. Technical Stack
+Framework: Electron.
+
+Frontend (UI):
+
+3D Rendering: Three.js.
+
+UI Framework: Svelte or Vue.js for their performance and reactive nature, which is ideal for this type of application.
+
+Backend (Logic):
+
+Language: Node.js.
+
+Core Modules: child_process, fs, path.
+
+Additional Libraries: chokidar (for file watching), axios (for API calls to scrapers), lowdb (for simple, robust JSON database management).
+
+Data Storage: A structured db.json file managed by lowdb, containing collections for games, settings, and themes.
+
+5. Project Milestones
+Phase 1: The Core Launcher (Proof of Concept)
+Goal: Create a functional launcher with a basic 2D interface.
+
+Tasks:
+
+Set up Electron project with Svelte/Vue.
+
+Implement manual game entry and launching.
+
+Perfect the focus-return mechanism.
+
+Implement basic gamepad navigation for a simple list.
+
+Set up lowdb for data storage.
+
+Integrate chokidar for basic file watching.
+
+Phase 2: The 3D User Interface
+Goal: Build the signature 3D carousel.
+
+Tasks:
+
+Integrate Three.js into the frontend framework.
+
+Create the 3D scene, lighting, and game card objects.
+
+Implement carousel logic, populating it from the database.
+
+Animate the carousel based on gamepad input.
+
+Develop the detailed "Selection View" screen.
+
+Phase 3: Automation & Integration
+Goal: Add the "smarts" for automated library building.
+
+Tasks:
+
+Implement the automatic RetroArch cores scanner.
+
+Build the metadata scraper service to fetch data from online APIs.
+
+Implement the "duplicate game" grouping logic.
+
+Create the UI for core selection and per-game overrides.
+
+Add system commands (Reboot/Shutdown).
+
+Phase 4: Customization & Polish
+Goal: Implement theming and finalize the user experience.
+
+Tasks:
+
+Build the theme engine for loading custom styles and layouts.
+
+Implement UI sound effects and the ability to switch sound packs.
+
+Develop the full settings menu, including performance profiles.
+
+Create the on-screen virtual keyboard.
+
+Phase 5: Optimization & Release
+Goal: Ensure smooth performance and prepare for distribution.
+
+Tasks:
+
+Conduct extensive performance testing on the Raspberry Pi 4.
+
+Optimize 3D rendering and data loading.
+
+Thorough bug testing, especially for edge cases in scraping and launching.
+
+Write documentation for users, including how to add games and create themes.
+
+Package the application for easy installation on Raspbian OS.

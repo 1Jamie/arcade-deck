@@ -1,0 +1,16 @@
+{
+  "name": "arcade-deck",
+  "version": "1.0.0",
+  "description": "An Electron-based arcade GUI for Raspberry Pi",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^25.0.0",
+    "babylonjs": "^5.0.0"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "MIT"
+} 

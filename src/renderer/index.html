@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Deck</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading">
+            <h1>Loading Arcade Deck...</h1>
+        </div>
+
+        <!-- Main Game List View -->
+        <div id="game-list-view" class="view hidden">
+            <div class="game-list">
+                <div class="header">
+                    <h1>Arcade Deck</h1>
+                    <div class="game-count" id="game-count">0 Games</div>
+                </div>
+
+                <div id="empty-state" class="empty-state">
+                    <h2>No games found</h2>
+                    <p>Press X to add your first game!</p>
+                </div>
+
+                <div id="games-container" class="games-container hidden">
+                    <!-- Games will be dynamically inserted here -->
+                </div>
+            </div>
+            
+
+        </div>
+
+        <!-- Game Details View -->
+        <div id="game-details-view" class="view hidden">
+            <div class="game-details">
+                <div id="game-details-content">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Game Form View -->
+        <div id="add-game-view" class="view hidden">
+            <div class="game-form">
+                <div class="form-header">
+                    <h2>Add New Game</h2>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                        <button class="btn btn-clear" id="clear-btn">Clear</button>
+                    </div>
+                </div>
+
+                <form id="game-form">
+                    <div id="form-error" class="error-message hidden"></div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="title">Game Title *</label>
+                            <input type="text" id="title" name="title" placeholder="Enter game title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="genre">Genre</label>
+                            <select id="genre" name="genre">
+                                <option value="">Select genre</option>
+                                <option value="Action">Action</option>
+                                <option value="Adventure">Adventure</option>
+                                <option value="Arcade">Arcade</option>
+                                <option value="Fighting">Fighting</option>
+                                <option value="Platform">Platform</option>
+                                <option value="Puzzle">Puzzle</option>
+                                <option value="Racing">Racing</option>
+                                <option value="RPG">RPG</option>
+                                <option value="Shooter">Shooter</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Strategy">Strategy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group executable-group">
+                            <label for="executable">Executable Path *</label>
+                            <div class="input-with-button">
+                                <input type="text" id="executable" name="executable" placeholder="/path/to/game/executable" required>
+                                <button type="button" class="browse-btn" id="browse-btn">Browse</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="args">Command Arguments</label>
+                            <input type="text" id="args" name="args" placeholder="--fullscreen --config /path/to/config">
+                            <small>Separate arguments with spaces</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="retroarchCore">RetroArch Core</label>
+                            <select id="retroarchCore" name="retroarchCore">
+                                <option value="">No RetroArch core (native game)</option>
+                                <!-- Cores will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="releaseDate">Release Date</label>
+                            <input type="text" id="releaseDate" name="releaseDate" placeholder="1985, 1990s, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="playerCount">Player Count</label>
+                            <input type="text" id="playerCount" name="playerCount" placeholder="1-2 Players, Single Player, etc.">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" placeholder="Game description..." rows="3"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="boxArt">Box Art URL</label>
+                            <input type="url" id="boxArt" name="boxArt" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label for="backgroundImage">Background Image URL</label>
+                            <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/background.jpg">
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">Add Game</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="view hidden">
+            <div class="settings">
+                <div class="settings-header">
+                    <h2>Settings</h2>
+                    <button class="btn btn-secondary" id="settings-close-btn">Close</button>
+                </div>
+
+                <div id="settings-message" class="message hidden"></div>
+
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h3>🎮 Emulation Settings</h3>
+                        
+                        <div class="setting-group">
+                            <label for="retroarchPath">RetroArch Executable Path</label>
+                            <div class="input-with-button">
+                                <input type="text" id="retroarchPath" name="retroarchPath" 
+                                       placeholder="/usr/bin/retroarch">
+                                <button type="button" class="browse-btn" id="browse-retroarch">Browse</button>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="coresPath">RetroArch Cores Directory</label>
+                            <div class="input-with-button">
+                                <input type="text" id="coresPath" name="coresPath" 
+                                       placeholder="~/.config/retroarch/cores">
+                                <button type="button" class="browse-btn" id="browse-cores">Browse</button>
+                                <button class="btn btn-small" id="scan-cores-btn">Scan Cores</button>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="romsPath">ROMs Directory</label>
+                            <div class="input-with-button">
+                                <input type="text" id="romsPath" name="romsPath" 
+                                       placeholder="~/ROMs">
+                                <button type="button" class="browse-btn" id="browse-roms">Browse</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🎨 Appearance</h3>
+                        
+                        <div class="setting-group">
+                            <label for="theme">Theme</label>
+                            <select id="theme" name="theme">
+                                <option value="default">Default</option>
+                                <option value="dark">Dark</option>
+                                <option value="retro">Retro</option>
+                                <option value="neon">Neon</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="performanceProfile">Performance Profile</label>
+                            <select id="performanceProfile" name="performanceProfile">
+                                <option value="fast">Fast - Maximum performance, minimal effects</option>
+                                <option value="balanced">Balanced - Good performance with some effects</option>
+                                <option value="fancy">Fancy - All effects enabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔊 Audio</h3>
+                        
+                        <div class="setting-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="soundEnabled" name="soundEnabled">
+                                <span class="checkmark"></span>
+                                Enable UI sounds
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>⚙️ System Controls</h3>
+                        
+                        <div class="system-controls">
+                            <button class="btn btn-warning" id="reboot-btn">🔄 Reboot System</button>
+                            <button class="btn btn-danger" id="shutdown-btn">⚡ Shutdown System</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-footer">
+                        <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Third-party libraries -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    
+    <!-- Scripts -->
+    <script src="js/utils/gamepad.js" type="module"></script>
+    <script src="js/components/gameList.js" type="module"></script>
+    <script src="js/components/gameCarousel.js" type="module"></script>
+    <script src="js/components/gameCarouselView.js" type="module"></script>
+    <script src="js/components/gameForm.js" type="module"></script>
+    <script src="js/components/settings.js" type="module"></script>
+    <script src="js/components/gameDetails.js" type="module"></script>
+    <script src="js/app.js" type="module"></script>
+</body>
+</html> 
